@@ -29,7 +29,7 @@ java --version
 1. Clonar el repositorio
 
 ```bash
-git clone [url-del-repo]
+git clone https://github.com/CCP-Proyecto/ccp-movil-clientes.git
 ```
 
 2. Instalar dependencias
