@@ -8,7 +8,7 @@ export const CustomText = ({ children }: PropsWithChildren) => (
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <CustomText>Welcome to CCP Movil Clientes!</CustomText>
+      <CustomText>Bienvenido a CCP Movil Clientes!</CustomText>
     </View>
   );
 }

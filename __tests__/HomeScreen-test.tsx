@@ -6,7 +6,7 @@ describe("<HomeScreen />", () => {
   test("Text renders correctly on HomeScreen", () => {
     const { getByText } = render(<HomeScreen />);
 
-    getByText("Welcome to CCP Movil Clientes!");
+    getByText("Bienvenido a CCP Movil Clientes!");
   });
 
   test("CustomText renders correctly", () => {
