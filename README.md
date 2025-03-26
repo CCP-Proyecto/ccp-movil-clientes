@@ -16,8 +16,6 @@
 - JDK 17:
   - Opciones de instalación para Windows:
     - [Microsoft OpenJDK 17](https://learn.microsoft.com/en-us/java/openjdk/download) (Recomendado)
-    - [Eclipse Temurin](https://adoptium.net/)
-    - [Amazon Corretto](https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/downloads-list.html)
   - Asegurarse de configurar JAVA_HOME en las variables de entorno del sistema operativo.
 
 Para verificar que JDK está instalado correctamente:
