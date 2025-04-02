@@ -24,41 +24,44 @@ jobs:
 
       - name: Run tests
         run: npm run test:ci
+# =============================================
+# BUILD JOB - Temporalmente deshabilitado
+# Descomentar cuando se quiera activar
+# =============================================
+# build:
+#   needs: [verify]
+#   runs-on: ubuntu-latest
+#   steps:
+#     - uses: actions/checkout@v4
 
-  build:
-    needs: [verify]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+#     - name: Set up Node.js
+#       uses: actions/setup-node@v4
+#       with:
+#         node-version: "20.9.0"
+#         cache: "npm"
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20.9.0"
-          cache: "npm"
+#     - name: Setup Java
+#       uses: actions/setup-java@v4
+#       with:
+#         distribution: "microsoft"
+#         java-version: "17"
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: "microsoft"
-          java-version: "17"
+#     - name: Setup Android SDK
+#       uses: android-actions/setup-android@v3
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+#     - name: Install dependencies
+#       run: npm install
 
-      - name: Install dependencies
-        run: npm install
+#     - name: Generate Debug APK
+#       run: |
+#         npx expo install expo-dev-client
+#         npx expo prebuild
+#         cd android
+#         chmod +x gradlew
+#         ./gradlew assembleDebug
 
-      - name: Generate Debug APK
-        run: |
-          npx expo install expo-dev-client
-          npx expo prebuild
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+#     - name: Upload APK
+#       uses: actions/upload-artifact@v4
+#       with:
+#         name: app-debug
+#         path: android/app/build/outputs/apk/debug/app-debug.apk
