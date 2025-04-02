@@ -1,21 +1,18 @@
 import React from "react";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, SafeAreaView, StyleSheet, ScrollView } from "react-native";
+import { Redirect } from "expo-router";
+import Checkbox from "expo-checkbox";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Toast from "react-native-toast-message";
 
+import { authClient } from "@/services/auth/auth-client";
+import { Logo } from "@/components/logo";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { colors } from "@/theme/colors";
-import { Logo } from "@/components/logo";
+import { APP_CONFIG } from "@/constants";
 
 const registerSchema = z.object({
   idType: z.string().min(1, "Tipo de identificación es requerido"),
@@ -27,7 +24,6 @@ const registerSchema = z.object({
     .regex(/^[0-9]{10}$/, "Número de celular debe tener 10 dígitos"),
   email: z.string().email("Email inválido"),
   address: z.string().min(1, "Dirección es requerida"),
-  loginId: z.string().min(1, "Usuario es requerido"),
   password: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
   acceptTerms: z.boolean().refine((val) => val === true, {
     message: "Debes aceptar los términos y condiciones",
@@ -52,21 +48,58 @@ export default function Register() {
       phone: "",
       email: "",
       address: "",
-      loginId: "",
       password: "",
       acceptTerms: false,
       acceptInfo: false,
     },
   });
 
-  const onSubmit = (data: RegisterFormValues) => {
-    // TODO: Implementar lógica de registro
-    console.log("Formulario enviado:", data);
-    Toast.show({
-      type: "success",
-      text1: "Registro exitoso",
-      text2: "Tus datos han sido registrados correctamente",
-    });
+  const onSubmit = async (data: RegisterFormValues) => {
+    console.log(data);
+    try {
+      const { error, data: responseData } = await authClient.signUp.email(
+        {
+          email: data.email,
+          password: data.password,
+          name: `${data.firstName} ${data.lastName}`,
+          phone: data.phone,
+          address: data.address,
+          idType: data.idType,
+          idNumber: data.idNumber,
+          acceptTerms: data.acceptTerms,
+          acceptInfo: data.acceptInfo,
+          roles: ["customer"],
+        },
+        {
+          body: {
+            app: APP_CONFIG.APP_ID,
+          },
+        },
+      );
+
+      if (responseData) {
+        Toast.show({
+          type: "success",
+          text1: "Registro exitoso",
+          text2: "Tus datos han sido registrados correctamente",
+        });
+        return <Redirect href={"/(app)/home"} />;
+      }
+      if (error) {
+        Toast.show({
+          type: "error",
+          text1: "Error de registro",
+          text2: error.message || "Por favor, verifica tus datos",
+        });
+      }
+    } catch (e) {
+      console.error("Error al conectar con el servidor:", e);
+      Toast.show({
+        type: "error",
+        text1: "Error de conexión",
+        text2: "No se pudo conectar con el servidor",
+      });
+    }
   };
 
   return (
@@ -153,21 +186,6 @@ export default function Register() {
 
         <Controller
           control={control}
-          name="email"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              placeholder="Email"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              error={errors.email?.message}
-              keyboardType="email-address"
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
           name="address"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
@@ -184,14 +202,15 @@ export default function Register() {
 
         <Controller
           control={control}
-          name="loginId"
+          name="email"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              placeholder="No de identificación"
+              placeholder="Email"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
-              error={errors.loginId?.message}
+              error={errors.email?.message}
+              keyboardType="email-address"
             />
           )}
         />
@@ -217,9 +236,11 @@ export default function Register() {
             control={control}
             name="acceptTerms"
             render={({ field: { onChange, value } }) => (
-              <TouchableOpacity
-                style={[styles.checkbox, value && styles.checkboxChecked]}
-                onPress={() => onChange(!value)}
+              <Checkbox
+                style={styles.checkbox}
+                value={value}
+                onValueChange={onChange}
+                color={value ? colors.secondary : undefined}
               />
             )}
           />
@@ -238,9 +259,11 @@ export default function Register() {
             control={control}
             name="acceptInfo"
             render={({ field: { onChange, value } }) => (
-              <TouchableOpacity
-                style={[styles.checkbox, value && styles.checkboxChecked]}
-                onPress={() => onChange(!value)}
+              <Checkbox
+                style={styles.checkbox}
+                value={value}
+                onValueChange={onChange}
+                color={value ? colors.secondary : undefined}
               />
             )}
           />
@@ -313,9 +336,6 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     borderRadius: 4,
     marginTop: 2,
-  },
-  checkboxChecked: {
-    backgroundColor: colors.primary,
   },
   errorText: {
     color: "red",
