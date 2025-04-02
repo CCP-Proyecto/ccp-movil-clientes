@@ -1,23 +1,9 @@
-import { PropsWithChildren } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Redirect } from "expo-router";
+import { authClient } from "@/services/auth/auth-client";
 
-export const CustomText = ({ children }: PropsWithChildren) => (
-  <Text>{children}</Text>
-);
+export default function Index() {
+  const { data: session } = authClient.useSession();
+  const screenToGo = session ? "/(app)/home" : "/(auth)/login-screen";
 
-export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <CustomText>Bienvenido a CCP Movil Clientes!</CustomText>
-    </View>
-  );
+  return <Redirect href={screenToGo} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
