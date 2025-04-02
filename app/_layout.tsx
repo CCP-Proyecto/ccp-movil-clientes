@@ -19,12 +19,10 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
-      // Ocultar la pantalla de splash cuando las fuentes estén cargadas o haya un error
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
 
-  // Devolver null hasta que las fuentes estén cargadas
   if (!fontsLoaded && !fontError) {
     return null;
   }
@@ -33,19 +31,12 @@ export default function RootLayout() {
     return null; // TODO: Hacer un loading
   }
 
-  // Devolver null hasta que las fuentes estén cargadas
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
-
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
         {!session ? (
-          // Rutas para usuarios no autenticados
           <Stack.Screen name="(auth)" />
         ) : (
-          // Rutas para usuarios autenticados
           <Stack.Screen name="(app)" />
         )}
       </Stack>

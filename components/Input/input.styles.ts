@@ -1,13 +1,26 @@
 import { StyleSheet } from "react-native";
+import { colors } from "@/theme";
 
 export const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    marginBottom: 10,
+  },
   input: {
-    width: "80%",
-    height: 48,
     borderWidth: 1,
-    borderColor: "#000000",
+    borderColor: colors.black,
     borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    padding: 12,
+    paddingVertical: 15,
+    fontFamily: "Comfortaa-Regular",
+  },
+  inputError: {
+    borderColor: "red",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: 5,
+    fontFamily: "Comfortaa-Regular",
   },
 });

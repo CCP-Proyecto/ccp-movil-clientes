@@ -8,8 +8,8 @@ export const authClient = createAuthClient({
   baseURL: API_URLS.ANDROID_EMULATOR,
   plugins: [
     expoClient({
-      scheme: "ccp-sales",
-      storagePrefix: "ccp-sales",
+      scheme: "ccp-customer",
+      storagePrefix: "ccp-customer",
       storage: SecureStore,
     }),
   ],
