@@ -30,7 +30,7 @@ describe("Login Screen", () => {
     expect(getByText("CCP")).toBeTruthy();
     expect(getByText("COMPRAS FÁCILES, ENVÍOS RÁPIDOS")).toBeTruthy();
     expect(getByText("Bienvenido")).toBeTruthy();
-    expect(getByText("Inicio de sesión")).toBeTruthy();
+    expect(getByText("Inicio de sesión - clientes")).toBeTruthy();
 
     expect(getByPlaceholderText("Usuario")).toBeTruthy();
     expect(getByPlaceholderText("Contraseña")).toBeTruthy();
