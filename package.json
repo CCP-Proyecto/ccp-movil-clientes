@@ -15,7 +15,9 @@
   "jest": {
     "preset": "jest-expo",
     "modulePathIgnorePatterns": [
-      "/app-example/"
+      "/app-example/",
+      "/android",
+      "/coverage"
     ],
     "setupFiles": [
       "<rootDir>/jest.setup.js"
