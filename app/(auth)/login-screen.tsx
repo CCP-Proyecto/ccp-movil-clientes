@@ -1,6 +1,12 @@
-import React from "react";
-import { View, Text, SafeAreaView, StyleSheet } from "react-native";
-import { Redirect, router } from "expo-router";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { router } from "expo-router";
 import Toast from "react-native-toast-message";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,9 +14,7 @@ import { z } from "zod";
 
 import { authClient } from "@/services/auth/auth-client";
 import { APP_CONFIG } from "@/constants";
-import { Logo } from "@/components/logo";
-import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
+import { Logo, Button, Input } from "@/components";
 import { colors } from "@/theme/colors";
 
 const loginSchema = z.object({
@@ -21,6 +25,8 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -34,6 +40,8 @@ export default function Login() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
+    setIsLoading(true);
+
     try {
       const { error, data: responseData } = await authClient.signIn.email(
         {
@@ -48,9 +56,20 @@ export default function Login() {
       );
 
       if (responseData) {
-        return <Redirect href={"/(app)/home"} />;
+        Toast.show({
+          type: "success",
+          text1: "Inicio de sesión exitoso",
+          text2: "Bienvenido de vuelta",
+          visibilityTime: 2000,
+          onHide: () => {
+            router.replace("/(app)/home");
+          },
+        });
+        return;
       }
+
       if (error) {
+        setIsLoading(false);
         Toast.show({
           type: "error",
           text1: "Error de inicio de sesión",
@@ -58,6 +77,7 @@ export default function Login() {
         });
       }
     } catch (e) {
+      setIsLoading(false);
       console.error("Error al conectar con el servidor:", e);
       Toast.show({
         type: "error",
@@ -69,6 +89,15 @@ export default function Login() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator
+            size="large"
+            color={colors.primary}
+          />
+        </View>
+      )}
+
       <View style={styles.logoContainer}>
         <Logo />
       </View>
@@ -137,7 +166,6 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     paddingTop: 30,
-    paddingHorizontal: 20,
   },
   centeredContent: {
     flex: 1,
@@ -166,5 +194,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     gap: 15,
     alignItems: "center",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
   },
 });

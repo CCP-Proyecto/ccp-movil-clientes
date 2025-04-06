@@ -1,18 +1,56 @@
+import { useState } from "react";
 import { Stack } from "expo-router";
 import { authClient } from "@/services/auth/auth-client";
 import { Redirect } from "expo-router";
+import { colors } from "@/theme/colors";
+import { LogoutButton } from "@/components";
 
 export default function AppLayout() {
   const { data: session } = authClient.useSession();
+  const [isLoggedOut, setIsLoggedOut] = useState(false);
 
-  // Redirige a login si no hay sesión
-  if (!session) {
+  const handleLogoutSuccess = () => {
+    setIsLoggedOut(true);
+  };
+
+  if (!session || isLoggedOut) {
     return <Redirect href="/(auth)/login-screen" />;
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="home" />
+    <Stack
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: colors.white,
+        },
+        headerTitleStyle: {
+          fontFamily: "Comfortaa-Bold",
+          color: colors.secondary,
+          fontSize: 16,
+        },
+        headerRight: () => (
+          <LogoutButton
+            onLogoutSuccess={handleLogoutSuccess}
+            style={{ marginRight: 15 }}
+          />
+        ),
+      }}
+    >
+      <Stack.Screen
+        name="home"
+        options={{
+          headerTitle: `Bienvenido, ${session?.user?.name}`,
+          headerShown: true,
+        }}
+      />
+
+      <Stack.Screen
+        name="createOrder"
+        options={{
+          headerTitle: "Creación de pedidos",
+          headerShown: true,
+        }}
+      />
     </Stack>
   );
 }

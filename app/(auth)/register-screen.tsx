@@ -1,6 +1,13 @@
-import React from "react";
-import { View, Text, SafeAreaView, StyleSheet, ScrollView } from "react-native";
-import { Redirect } from "expo-router";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import { router } from "expo-router";
 import Checkbox from "expo-checkbox";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,9 +15,7 @@ import { z } from "zod";
 import Toast from "react-native-toast-message";
 
 import { authClient } from "@/services/auth/auth-client";
-import { Logo } from "@/components/logo";
-import { Input } from "@/components/Input";
-import { Button } from "@/components/Button";
+import { Logo, Input, Button } from "@/components";
 import { colors } from "@/theme/colors";
 import { APP_CONFIG } from "@/constants";
 
@@ -34,6 +39,8 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function Register() {
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -55,7 +62,8 @@ export default function Register() {
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
-    console.log(data);
+    setIsLoading(true);
+
     try {
       const { error, data: responseData } = await authClient.signUp.email(
         {
@@ -82,10 +90,15 @@ export default function Register() {
           type: "success",
           text1: "Registro exitoso",
           text2: "Tus datos han sido registrados correctamente",
+          visibilityTime: 2000,
+          onHide: () => {
+            router.replace("/(app)/home");
+          },
         });
-        return <Redirect href={"/(app)/home"} />;
+        return;
       }
       if (error) {
+        setIsLoading(false);
         Toast.show({
           type: "error",
           text1: "Error de registro",
@@ -93,6 +106,7 @@ export default function Register() {
         });
       }
     } catch (e) {
+      setIsLoading(false);
       console.error("Error al conectar con el servidor:", e);
       Toast.show({
         type: "error",
@@ -104,6 +118,15 @@ export default function Register() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator
+            size="large"
+            color={colors.primary}
+          />
+        </View>
+      )}
+
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <Logo />
 
@@ -112,7 +135,6 @@ export default function Register() {
           Registrarte es muy fácil y rápido
         </Text>
 
-        {/* Formulario de registro con Controllers */}
         <Controller
           control={control}
           name="idType"
@@ -230,7 +252,6 @@ export default function Register() {
           )}
         />
 
-        {/* Términos y condiciones */}
         <View style={styles.checkboxContainer}>
           <Controller
             control={control}
@@ -273,7 +294,6 @@ export default function Register() {
           </Text>
         </View>
 
-        {/* Botón de registro */}
         <Button
           title="Registrarme"
           onPress={handleSubmit(onSubmit)}
@@ -343,5 +363,16 @@ const styles = StyleSheet.create({
     fontFamily: "Comfortaa-Regular",
     marginLeft: 10,
     marginTop: 2,
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
   },
 });

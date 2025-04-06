@@ -4,7 +4,7 @@ import { colors } from "@/theme/colors";
 export const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    width: "100%",
+    width: "90%",
   },
   logo: {
     fontFamily: "Comfortaa-Bold",
