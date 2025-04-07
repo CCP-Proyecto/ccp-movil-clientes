@@ -1,9 +1,16 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import { router } from "expo-router";
+import Toast from "react-native-toast-message";
 import { Logo, Button } from "@/components";
 import { NumberPicker } from "@/components";
 import { colors } from "@/theme/colors";
-import Toast from "react-native-toast-message";
 
 const products = [
   { id: 1, name: "Azúcar" },
@@ -26,6 +33,8 @@ export default function CreateOrder() {
       {} as Record<number, number>,
     ),
   );
+  const [isLoading, setIsLoading] = useState(false);
+  const [wasOrderSent, setWasOrderSent] = useState(false);
 
   const handleIncrement = (id: number) => {
     setQuantities((prev) => ({
@@ -48,7 +57,7 @@ export default function CreateOrder() {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const selectedProducts = products.filter(
       (product) => quantities[product.id] > 0,
     );
@@ -62,12 +71,29 @@ export default function CreateOrder() {
       return;
     }
 
-    console.log("Pedido realizado:", selectedProducts);
-    Toast.show({
-      type: "success",
-      text1: "Pedido realizado",
-      text2: "Tu pedido ha sido enviado correctamente",
-    });
+    setIsLoading(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      setWasOrderSent(true);
+      Toast.show({
+        type: "success",
+        text1: "Pedido realizado",
+        text2: "Tu pedido ha sido enviado correctamente",
+        onHide: () => {
+          router.replace("/(app)/home");
+        },
+      });
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "No se pudo procesar tu pedido. Inténtalo de nuevo.",
+      });
+      console.error("Error al enviar pedido:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -100,10 +126,18 @@ export default function CreateOrder() {
         </ScrollView>
 
         <Button
-          title="Realizar pedido"
+          title={isLoading ? "Enviando..." : "Realizar pedido"}
           onPress={handleSubmit}
           style={styles.submitButton}
+          disabled={wasOrderSent || isLoading}
         />
+        {isLoading && (
+          <ActivityIndicator
+            size="large"
+            color={colors.primary}
+            style={styles.loader}
+          />
+        )}
       </View>
     </View>
   );
@@ -154,5 +188,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignSelf: "center",
     width: "100%",
+  },
+  loader: {
+    marginTop: 20,
+    alignSelf: "center",
   },
 });

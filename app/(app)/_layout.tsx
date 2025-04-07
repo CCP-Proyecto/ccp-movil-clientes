@@ -41,6 +41,7 @@ export default function AppLayout() {
         options={{
           headerTitle: `Bienvenido, ${session?.user?.name}`,
           headerShown: true,
+          headerBackVisible: false,
         }}
       />
 
