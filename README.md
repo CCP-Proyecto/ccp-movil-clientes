@@ -60,6 +60,17 @@ Las builds generadas se encontrarán en:
 
 - Release: android/app/build/outputs/apk/release/app-release.apk
 
+También se puede descargar la última versión del APK directamente desde la sección de [Releases](https://github.com/CCP-Proyecto/ccp-movil-clientes/releases) en GitHub.
+
+Para instalar la APK en un dispositivo y comprobar que funciona correctamente:
+
+```bash
+# Si se está usando el APK generado localmente:
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+
+# Si se está usando el APK descargado del release de GitHub:
+adb install -r ruta/al/archivo/descargado/app-release.apk
+```
 ## Testing
 
 ### Configuración de Jest
