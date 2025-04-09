@@ -3,10 +3,10 @@ import { expoClient } from "@better-auth/expo/client";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import * as SecureStore from "expo-secure-store";
 
-import { API_URLS } from "@/constants";
+import { CLOUD_ENDPOINTS } from "@/constants";
 
 export const authClient = createAuthClient({
-  baseURL: API_URLS.ANDROID_EMULATOR,
+  baseURL: CLOUD_ENDPOINTS.USERS_MS,
   plugins: [
     expoClient({
       scheme: "ccp-customer",
