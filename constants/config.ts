@@ -9,12 +9,6 @@ export const CLOUD_ENDPOINTS = {
   API_MS: "https://ccp-api-359954554145.us-east1.run.app",
 };
 
-// export const API_ENDPOINTS = {
-//   PRODUCTS: `${CLOUD_ENDPOINTS.API_MS}/api/products`,
-//   ORDERS: `${CLOUD_ENDPOINTS.API_MS}/api/orders`,
-//   VISITS: `${CLOUD_ENDPOINTS.API_MS}/api/visits`,
-// };
-
 export const APP_CONFIG = {
   APP_NAME: "CCP Customer",
   APP_ID: "ccp-customer",
