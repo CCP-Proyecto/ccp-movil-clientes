@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { Logo } from "@/components";
 import { HomeButton } from "@/components";
@@ -7,35 +7,89 @@ import { colors } from "@/theme/colors";
 
 export default function Home() {
   const handleCreateOrders = () => {
-    console.log("Creación de pedidos");
     router.push("/(app)/createOrder");
   };
 
-  return (
-    <View style={styles.container}>
-      <Logo />
+  const handleGetDeliveries = () => {
+    router.push("/(app)/getDeliveries");
+  };
 
-      <View style={styles.buttonsContainer}>
-        <HomeButton
-          title="Creación de pedidos"
-          onPress={handleCreateOrders}
-        />
+  return (
+    <ScrollView
+      style={styles.scrollContainer}
+      contentContainerStyle={styles.scrollContentContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.container}>
+        <Logo />
+
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Crear</Text>
+          <View style={styles.sectionDivider} />
+        </View>
+
+        <View style={styles.buttonsContainer}>
+          <HomeButton
+            title="Creación de pedidos"
+            onPress={handleCreateOrders}
+          />
+        </View>
+
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Consultar</Text>
+          <View style={styles.sectionDivider} />
+        </View>
+
+        <View style={styles.buttonsContainer}>
+          <HomeButton
+            title="Consultar entregas"
+            onPress={handleGetDeliveries}
+          />
+        </View>
+
+        <View style={{ height: 20 }} />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollContainer: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
+  },
+  container: {
+    flex: 1,
     alignItems: "center",
     paddingTop: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
+  sectionContainer: {
+    width: "100%",
+    marginTop: 30,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  sectionTitle: {
+    fontFamily: "Comfortaa-Bold",
+    fontSize: 18,
+    color: colors.secondary,
+    marginRight: 10,
+  },
+  sectionDivider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.secondary,
+    opacity: 0.5,
   },
   buttonsContainer: {
-    flex: 1,
     width: "100%",
     alignItems: "center",
-    marginTop: 30,
+    marginTop: 15,
   },
 });

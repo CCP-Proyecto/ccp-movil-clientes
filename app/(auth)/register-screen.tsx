@@ -13,6 +13,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Toast from "react-native-toast-message";
+import { Picker } from "@react-native-picker/picker";
 
 import { authClient } from "@/services/auth/auth-client";
 import { Logo, Input, Button } from "@/components";
@@ -135,19 +136,43 @@ export default function Register() {
           Registrarte es muy fácil y rápido
         </Text>
 
-        <Controller
-          control={control}
-          name="idType"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              placeholder="Tipo de identificación"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              error={errors.idType?.message}
-            />
-          )}
-        />
+        <View style={styles.pickerContainer}>
+          <Text style={styles.pickerLabel}>Tipo de documento</Text>
+          <Controller
+            control={control}
+            name="idType"
+            render={({ field: { onChange, value } }) => (
+              <>
+                <View style={styles.pickerWrapper}>
+                  <Picker
+                    selectedValue={value}
+                    onValueChange={onChange}
+                    style={styles.picker}
+                    mode="dropdown"
+                    dropdownIconColor={colors.primary}
+                  >
+                    <Picker.Item
+                      label="Seleccione un tipo"
+                      value=""
+                      enabled={false}
+                    />
+                    <Picker.Item
+                      label="Cédula de ciudadanía"
+                      value="CC"
+                    />
+                    <Picker.Item
+                      label="NIT"
+                      value="NIT"
+                    />
+                  </Picker>
+                </View>
+                {errors.idType && (
+                  <Text style={styles.errorText}>{errors.idType.message}</Text>
+                )}
+              </>
+            )}
+          />
+        </View>
 
         <Controller
           control={control}
@@ -374,5 +399,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
+  },
+  pickerContainer: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  pickerLabel: {
+    fontFamily: "Comfortaa-Regular",
+    fontSize: 14,
+    color: colors.black,
+    marginBottom: 5,
+  },
+  pickerWrapper: {
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 4,
+    overflow: "hidden",
+    paddingHorizontal: 8,
+  },
+  picker: {
+    height: 50,
+    width: "100%",
   },
 });

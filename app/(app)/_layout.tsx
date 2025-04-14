@@ -52,6 +52,14 @@ export default function AppLayout() {
           headerShown: true,
         }}
       />
+
+      <Stack.Screen
+        name="getDeliveries"
+        options={{
+          headerTitle: "Consulta de entregas",
+          headerShown: true,
+        }}
+      />
     </Stack>
   );
 }

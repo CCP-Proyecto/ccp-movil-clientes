@@ -17,6 +17,8 @@ import { APP_CONFIG } from "@/constants";
 import { Logo, Button, Input } from "@/components";
 import { colors } from "@/theme/colors";
 
+const APP_VERSION = APP_CONFIG.APP_VERSION;
+
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Contraseña es requerida"),
@@ -151,6 +153,9 @@ export default function Login() {
             variant="text"
           />
         </View>
+        <View style={styles.versionContainer}>
+          <Text style={styles.versionText}>Versión {APP_VERSION}</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -205,5 +210,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
+  },
+  versionContainer: {
+    position: "absolute",
+    bottom: 20,
+    width: "100%",
+    alignItems: "center",
+  },
+  versionText: {
+    fontFamily: "Comfortaa-Regular",
+    fontSize: 12,
+    color: colors.secondary,
+    opacity: 0.7,
   },
 });

@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  TouchableOpacity,
+  Platform,
 } from "react-native";
 import { router } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -12,35 +14,51 @@ import { fetchClient } from "@/services";
 import { Logo, Button } from "@/components";
 import { NumberPicker } from "@/components";
 import { colors } from "@/theme/colors";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 interface Product {
   id: number;
   name: string;
   description?: string;
-  price?: number;
+  price: number;
   amount?: number;
   storageCondition?: string;
   manufacturerId?: string;
 }
 
+// Datos mock
 const productsMock: Product[] = [
-  { id: 1, name: "Azúcar" },
-  { id: 2, name: "Sal" },
-  { id: 3, name: "Café" },
-  { id: 4, name: "Chocolate" },
-  { id: 5, name: "Agua en botella" },
-  { id: 6, name: "Jugo en caja" },
-  { id: 7, name: "Vino" },
-  { id: 8, name: "Galletas" },
+  { id: 1, name: "Azúcar", price: 2500, description: "Bolsa x 500g" },
+  { id: 2, name: "Sal", price: 1800, description: "Bolsa x 1kg" },
+  { id: 3, name: "Café", price: 12000, description: "Premium x 500g" },
+  { id: 4, name: "Chocolate", price: 8500, description: "Tableta x 250g" },
+  { id: 5, name: "Agua en botella", price: 2200, description: "600ml" },
+  { id: 6, name: "Jugo en caja", price: 3500, description: "1L" },
+  { id: 7, name: "Vino", price: 35000, description: "Botella 750ml" },
+  {
+    id: 8,
+    name: "Galletas",
+    price: 4200,
+    description: "Paquete x 12 unidades",
+  },
 ];
 
 export default function CreateOrder() {
   const [products, setProducts] = useState<Product[]>(productsMock);
   const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
-
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [wasOrderSent, setWasOrderSent] = useState(false);
+
+  const [deliveryDate, setDeliveryDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const totalOrderValue = useMemo(() => {
+    return products.reduce((total, product) => {
+      const quantity = quantities[product.id] || 0;
+      return total + product.price * quantity;
+    }, 0);
+  }, [products, quantities]);
 
   useEffect(() => {
     setQuantities(
@@ -61,7 +79,11 @@ export default function CreateOrder() {
       console.log("Products response:", data, "Error:", error);
 
       if (data && Array.isArray(data) && data.length > 0) {
-        setProducts(data);
+        const validatedProducts = data.map((product) => ({
+          ...product,
+          price: product.price || 0,
+        }));
+        setProducts(validatedProducts);
       } else {
         console.log("Using mock products as fallback");
         setProducts(productsMock);
@@ -113,6 +135,15 @@ export default function CreateOrder() {
       return;
     }
 
+    if (!deliveryDate) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Debes seleccionar una fecha de entrega",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const orderData = {
@@ -120,7 +151,11 @@ export default function CreateOrder() {
           id: product.id,
           name: product.name,
           amount: quantities[product.id],
+          price: product.price,
+          subtotal: product.price * quantities[product.id],
         })),
+        total: totalOrderValue,
+        deliveryDate: deliveryDate.toISOString(),
       };
 
       console.log("Enviando orden:", JSON.stringify(orderData, null, 2));
@@ -135,7 +170,11 @@ export default function CreateOrder() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         orderResult = {
-          data: { id: Math.floor(Math.random() * 10000), status: "created" },
+          data: {
+            id: Math.floor(Math.random() * 10000),
+            status: "created",
+            total: totalOrderValue,
+          },
           error: null,
         };
       } else {
@@ -153,8 +192,8 @@ export default function CreateOrder() {
         type: "success",
         text1: "Pedido realizado",
         text2: usingMockProducts
-          ? "Pedido creado correctamente"
-          : "Tu pedido ha sido enviado correctamente",
+          ? `Pedido por $${totalOrderValue.toLocaleString()} creado correctamente`
+          : `Tu pedido por $${totalOrderValue.toLocaleString()} ha sido enviado correctamente`,
         onHide: () => {
           router.replace("/(app)/home");
         },
@@ -170,6 +209,28 @@ export default function CreateOrder() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Función para manejar el cambio de fecha
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      setDeliveryDate(selectedDate);
+    }
+  };
+
+  // Formatea la fecha para mostrarla en el input
+  const formattedDeliveryDate = deliveryDate
+    ? deliveryDate.toLocaleDateString("es-CO", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "";
+
+  // Función para formatear precios en formato de moneda colombiana
+  const formatCurrency = (value: number) => {
+    return `$${value.toLocaleString("es-CO")}`;
   };
 
   return (
@@ -190,42 +251,97 @@ export default function CreateOrder() {
           />
         ) : (
           <ScrollView contentContainerStyle={styles.productsContainer}>
-            {products.map((product) => (
-              <View
-                key={product.id}
-                style={styles.productRow}
-              >
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{product.name}</Text>
-                  {product.description && (
-                    <Text style={styles.productDescription}>
-                      {product.description}
-                    </Text>
-                  )}
-                  {product.price !== undefined && (
+            {products.map((product) => {
+              const quantity = quantities[product.id] || 0;
+              const subtotal = product.price * quantity;
+
+              return (
+                <View
+                  key={product.id}
+                  style={styles.productRow}
+                >
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName}>{product.name}</Text>
+                    {product.description && (
+                      <Text style={styles.productDescription}>
+                        {product.description}
+                      </Text>
+                    )}
                     <Text style={styles.productPrice}>
-                      ${product.price.toFixed(2)}
+                      {formatCurrency(product.price)}
                     </Text>
-                  )}
+                    {quantity > 0 && (
+                      <Text style={styles.subtotalText}>
+                        Subtotal: {formatCurrency(subtotal)}
+                      </Text>
+                    )}
+                  </View>
+                  <NumberPicker
+                    value={quantity}
+                    onIncrement={() => handleIncrement(product.id)}
+                    onDecrement={() => handleDecrement(product.id)}
+                    onChange={(value) => handleValueChange(product.id, value)}
+                    min={0}
+                    max={999}
+                  />
                 </View>
-                <NumberPicker
-                  value={quantities[product.id] || 0}
-                  onIncrement={() => handleIncrement(product.id)}
-                  onDecrement={() => handleDecrement(product.id)}
-                  onChange={(value) => handleValueChange(product.id, value)}
-                  min={0}
-                  max={999}
-                />
-              </View>
-            ))}
+              );
+            })}
           </ScrollView>
+        )}
+
+        {/* Total del pedido */}
+        {!loadingProducts && (
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalLabel}>Total del pedido:</Text>
+            <Text style={styles.totalValue}>
+              {formatCurrency(totalOrderValue)}
+            </Text>
+          </View>
+        )}
+
+        {/* Selector de fecha de entrega */}
+        {!loadingProducts && (
+          <View style={styles.deliveryDateContainer}>
+            <Text style={styles.deliveryDateLabel}>Fecha de entrega:</Text>
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              style={styles.datePickerButton}
+              disabled={isLoading || wasOrderSent}
+            >
+              <Text
+                style={[
+                  styles.datePickerText,
+                  !formattedDeliveryDate && styles.placeholderText,
+                ]}
+              >
+                {formattedDeliveryDate || "Seleccionar fecha"}
+              </Text>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={deliveryDate || new Date()}
+                mode="date"
+                display="default"
+                onChange={onDateChange}
+                minimumDate={new Date()} // No permitir fechas pasadas
+              />
+            )}
+          </View>
         )}
 
         <Button
           title={isLoading ? "Enviando..." : "Realizar pedido"}
           onPress={handleSubmit}
           style={styles.submitButton}
-          disabled={wasOrderSent || isLoading || loadingProducts}
+          disabled={
+            wasOrderSent ||
+            isLoading ||
+            loadingProducts ||
+            totalOrderValue === 0 ||
+            !deliveryDate
+          }
         />
         {isLoading && (
           <ActivityIndicator
@@ -298,13 +414,69 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginTop: 4,
   },
+  subtotalText: {
+    fontFamily: "Comfortaa-Bold",
+    fontSize: 13,
+    color: colors.secondary,
+    marginTop: 4,
+  },
+  totalContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: colors.primary,
+    marginTop: 10,
+  },
+  totalLabel: {
+    fontFamily: "Comfortaa-Bold",
+    fontSize: 16,
+    color: colors.black,
+  },
+  totalValue: {
+    fontFamily: "Comfortaa-Bold",
+    fontSize: 18,
+    color: colors.primary,
+  },
   submitButton: {
     marginTop: 20,
     alignSelf: "center",
     width: "100%",
+    marginBottom: 20,
   },
   loader: {
     marginTop: 20,
     alignSelf: "center",
+  },
+  deliveryDateContainer: {
+    marginTop: 20,
+    marginBottom: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray || "#eee",
+    paddingTop: 15,
+  },
+  deliveryDateLabel: {
+    fontFamily: "Comfortaa-Bold",
+    fontSize: 16,
+    color: colors.black,
+    marginBottom: 10,
+  },
+  datePickerButton: {
+    borderWidth: 1,
+    borderColor: colors.secondary,
+    borderRadius: 5,
+    padding: 12,
+    backgroundColor: colors.white,
+  },
+  datePickerText: {
+    fontFamily: "Comfortaa-Regular",
+    fontSize: 16,
+    color: colors.black,
+    textAlign: "center",
+  },
+  placeholderText: {
+    color: colors.secondary,
+    opacity: 0.7,
   },
 });
