@@ -5,8 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  TouchableOpacity,
-  Platform,
 } from "react-native";
 import { router } from "expo-router";
 import Toast from "react-native-toast-message";
@@ -14,7 +12,6 @@ import { fetchClient } from "@/services";
 import { Logo, Button } from "@/components";
 import { NumberPicker } from "@/components";
 import { colors } from "@/theme/colors";
-import DateTimePicker from "@react-native-community/datetimepicker";
 
 interface Product {
   id: number;
@@ -49,9 +46,6 @@ export default function CreateOrder() {
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [wasOrderSent, setWasOrderSent] = useState(false);
-
-  const [deliveryDate, setDeliveryDate] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const totalOrderValue = useMemo(() => {
     return products.reduce((total, product) => {
@@ -135,27 +129,16 @@ export default function CreateOrder() {
       return;
     }
 
-    if (!deliveryDate) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Debes seleccionar una fecha de entrega",
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
+      const customerId = "";
+
       const orderData = {
+        customerId: customerId,
         products: selectedProducts.map((product) => ({
-          id: product.id,
-          name: product.name,
-          amount: quantities[product.id],
-          price: product.price,
-          subtotal: product.price * quantities[product.id],
+          productId: product.id,
+          quantity: quantities[product.id],
         })),
-        total: totalOrderValue,
-        deliveryDate: deliveryDate.toISOString(),
       };
 
       console.log("Enviando orden:", JSON.stringify(orderData, null, 2));
@@ -210,23 +193,6 @@ export default function CreateOrder() {
       setIsLoading(false);
     }
   };
-
-  // Función para manejar el cambio de fecha
-  const onDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === "ios");
-    if (selectedDate) {
-      setDeliveryDate(selectedDate);
-    }
-  };
-
-  // Formatea la fecha para mostrarla en el input
-  const formattedDeliveryDate = deliveryDate
-    ? deliveryDate.toLocaleDateString("es-CO", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "";
 
   // Función para formatear precios en formato de moneda colombiana
   const formatCurrency = (value: number) => {
@@ -300,37 +266,6 @@ export default function CreateOrder() {
           </View>
         )}
 
-        {/* Selector de fecha de entrega */}
-        {!loadingProducts && (
-          <View style={styles.deliveryDateContainer}>
-            <Text style={styles.deliveryDateLabel}>Fecha de entrega:</Text>
-            <TouchableOpacity
-              onPress={() => setShowDatePicker(true)}
-              style={styles.datePickerButton}
-              disabled={isLoading || wasOrderSent}
-            >
-              <Text
-                style={[
-                  styles.datePickerText,
-                  !formattedDeliveryDate && styles.placeholderText,
-                ]}
-              >
-                {formattedDeliveryDate || "Seleccionar fecha"}
-              </Text>
-            </TouchableOpacity>
-
-            {showDatePicker && (
-              <DateTimePicker
-                value={deliveryDate || new Date()}
-                mode="date"
-                display="default"
-                onChange={onDateChange}
-                minimumDate={new Date()} // No permitir fechas pasadas
-              />
-            )}
-          </View>
-        )}
-
         <Button
           title={isLoading ? "Enviando..." : "Realizar pedido"}
           onPress={handleSubmit}
@@ -339,8 +274,7 @@ export default function CreateOrder() {
             wasOrderSent ||
             isLoading ||
             loadingProducts ||
-            totalOrderValue === 0 ||
-            !deliveryDate
+            totalOrderValue === 0
           }
         />
         {isLoading && (
@@ -448,35 +382,5 @@ const styles = StyleSheet.create({
   loader: {
     marginTop: 20,
     alignSelf: "center",
-  },
-  deliveryDateContainer: {
-    marginTop: 20,
-    marginBottom: 10,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray || "#eee",
-    paddingTop: 15,
-  },
-  deliveryDateLabel: {
-    fontFamily: "Comfortaa-Bold",
-    fontSize: 16,
-    color: colors.black,
-    marginBottom: 10,
-  },
-  datePickerButton: {
-    borderWidth: 1,
-    borderColor: colors.secondary,
-    borderRadius: 5,
-    padding: 12,
-    backgroundColor: colors.white,
-  },
-  datePickerText: {
-    fontFamily: "Comfortaa-Regular",
-    fontSize: 16,
-    color: colors.black,
-    textAlign: "center",
-  },
-  placeholderText: {
-    color: colors.secondary,
-    opacity: 0.7,
   },
 });

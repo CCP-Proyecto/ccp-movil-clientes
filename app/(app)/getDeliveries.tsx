@@ -5,18 +5,6 @@ import { Logo } from "@/components";
 
 const estados = [
   {
-    estado: "ENTREGADO",
-    descripcion: "Envío entregado en perfectas condiciones",
-    ciudad: "Bogota",
-    fecha: "06/03/2025",
-  },
-  {
-    estado: "EN DISTRIBUCIÓN",
-    descripcion: "Paquete en distribución",
-    ciudad: "Bogota",
-    fecha: "06/03/2025",
-  },
-  {
     estado: "EN BODEGA",
     descripcion: "Paquete en Bodega",
     ciudad: "Bogota",
