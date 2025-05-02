@@ -19,6 +19,7 @@ import { authClient } from "@/services/auth/auth-client";
 import { Logo, Input, Button } from "@/components";
 import { colors } from "@/theme/colors";
 import { APP_CONFIG } from "@/constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const registerSchema = z.object({
   idType: z.string().min(1, "Tipo de identificación es requerido"),
@@ -74,7 +75,7 @@ export default function Register() {
           phone: data.phone,
           address: data.address,
           idType: data.idType,
-          idNumber: data.idNumber,
+          userId: data.idNumber,
           acceptTerms: data.acceptTerms,
           acceptInfo: data.acceptInfo,
           roles: ["customer"],
@@ -85,6 +86,29 @@ export default function Register() {
           },
         },
       );
+
+      try {
+        console.log(data);
+        await AsyncStorage.removeItem("user-data");
+        await AsyncStorage.setItem(
+          "user-data",
+          JSON.stringify({
+            phone: data.phone,
+            address: data.address,
+            idType: data.idType,
+            userId: data.idNumber,
+            name: `${data.firstName} ${data.lastName}`,
+          }),
+        );
+        console.log("Datos del usuario guardados en AsyncStorage");
+      } catch (e) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "No se pudo guardar la información del usuario",
+        });
+        console.error("Error al guardar datos del usuario:", e);
+      }
 
       if (responseData) {
         Toast.show({

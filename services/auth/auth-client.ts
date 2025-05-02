@@ -15,6 +15,9 @@ export const authClient = createAuthClient({
     }),
     inferAdditionalFields({
       user: {
+        userId: {
+          type: "string",
+        },
         roles: {
           type: "string[]",
         },
@@ -25,9 +28,6 @@ export const authClient = createAuthClient({
           type: "string",
         },
         idType: {
-          type: "string",
-        },
-        idNumber: {
           type: "string",
         },
         acceptTerms: {

@@ -13,9 +13,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { authClient } from "@/services/auth/auth-client";
-import { APP_CONFIG } from "@/constants";
+import { APP_CONFIG, CLOUD_ENDPOINTS } from "@/constants";
 import { Logo, Button, Input } from "@/components";
 import { colors } from "@/theme/colors";
+import { fetchClient } from "@/services";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const APP_VERSION = APP_CONFIG.APP_VERSION;
 
@@ -58,6 +60,31 @@ export default function Login() {
       );
 
       if (responseData) {
+        const userData = await AsyncStorage.getItem("user-data");
+        const userDataLocal = userData ? JSON.parse(userData) : null;
+        const res = await fetchClient.get(
+          `${CLOUD_ENDPOINTS.API_MS}/api/customer/${userDataLocal.userId}`,
+        );
+
+        if (res.error?.status === 404) {
+          console.log("User not found, creating new user");
+
+          const body = {
+            id: userDataLocal?.userId?.toString(),
+            idType: userDataLocal.idType,
+            address: userDataLocal.address,
+            name: userDataLocal.name,
+            phone: userDataLocal.phone,
+          };
+          console.log(body);
+          const { error } = await fetchClient.post(
+            `${CLOUD_ENDPOINTS.API_MS}/api/customer`,
+            body,
+          );
+
+          console.log(error);
+        }
+
         Toast.show({
           type: "success",
           text1: "Inicio de sesión exitoso",
