@@ -17,7 +17,9 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.anonymous.ccpmovilclientes",
-      "permissions": ["INTERNET"]
+      "permissions": [
+        "INTERNET"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -46,7 +48,8 @@
             "./assets/fonts/Comfortaa-Bold.ttf"
           ]
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

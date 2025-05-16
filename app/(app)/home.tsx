@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { Logo } from "@/components";
 import { HomeButton } from "@/components";
 import { colors } from "@/theme/colors";
+import { t } from "@/i18n";
 
 export default function Home() {
   const handleCreateOrders = () => {
@@ -24,25 +25,25 @@ export default function Home() {
         <Logo />
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Crear</Text>
+          <Text style={styles.sectionTitle}>{t("menu.createTitle")}</Text>
           <View style={styles.sectionDivider} />
         </View>
 
         <View style={styles.buttonsContainer}>
           <HomeButton
-            title="Creación de pedidos"
+            title={t("menu.createButton")}
             onPress={handleCreateOrders}
           />
         </View>
 
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Consultar</Text>
+          <Text style={styles.sectionTitle}>{t("menu.consultTitle")}</Text>
           <View style={styles.sectionDivider} />
         </View>
 
         <View style={styles.buttonsContainer}>
           <HomeButton
-            title="Consultar entregas"
+            title={t("menu.getDeliveriesButton")}
             onPress={handleGetDeliveries}
           />
         </View>

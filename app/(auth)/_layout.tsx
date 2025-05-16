@@ -3,6 +3,7 @@ import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { colors } from "@/theme";
+import { t } from "@/i18n";
 
 export default function AuthLayout() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function AuthLayout() {
       <Stack.Screen
         name="register-screen"
         options={{
-          headerTitle: "Registro",
+          headerTitle: `${t("auth.signup.screenTitle")}`,
           headerTitleStyle: {
             fontFamily: "Comfortaa-Bold",
             color: colors.secondary,

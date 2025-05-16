@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Logo } from "@/components";
+import { t } from "@/i18n";
 
 const estados = [
   {
@@ -18,8 +19,8 @@ export default function EstadoEntregaScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Logo />
 
-        <Text style={styles.title}>Entregas</Text>
-        <Text style={styles.subtitle}>Este es el estado de tu entrega</Text>
+        <Text style={styles.title}>{t("deliveries.screenTitle")}</Text>
+        <Text style={styles.subtitle}>{t("deliveries.subTitle")}</Text>
 
         <View style={styles.cardContainer}>
           <View style={styles.trackingHeader}>
@@ -29,7 +30,7 @@ export default function EstadoEntregaScreen() {
               color="#fff"
             />
             <Text style={styles.trackingNumber}>
-              Número de pedido R014652567
+              {`${t("deliveries.orderNumber")}: R014652567`}
             </Text>
           </View>
 
@@ -47,9 +48,15 @@ export default function EstadoEntregaScreen() {
                 <Text style={styles.estado}>{item.estado}</Text>
               </View>
               <View style={styles.estadoDetalle}>
-                <Text style={styles.textoFila}>Descripción</Text>
-                <Text style={styles.textoFila}>Ciudad</Text>
-                <Text style={styles.textoFila}>Fecha</Text>
+                <Text style={styles.textoFila}>
+                  {t("deliveries.orderDetails")}
+                </Text>
+                <Text style={styles.textoFila}>
+                  {t("deliveries.orderCity")}
+                </Text>
+                <Text style={styles.textoFila}>
+                  {t("deliveries.orderDate")}
+                </Text>
               </View>
               <View style={styles.estadoDetalle}>
                 <Text style={styles.descripcion}>{item.descripcion}</Text>

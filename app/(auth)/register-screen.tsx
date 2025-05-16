@@ -20,20 +20,19 @@ import { Logo, Input, Button } from "@/components";
 import { colors } from "@/theme/colors";
 import { APP_CONFIG } from "@/constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { t } from "@/i18n";
 
 const registerSchema = z.object({
-  idType: z.string().min(1, "Tipo de identificación es requerido"),
-  idNumber: z.string().min(5, "Número de identificación inválido"),
-  firstName: z.string().min(1, "Nombre es requerido"),
-  lastName: z.string().min(1, "Apellido es requerido"),
-  phone: z
-    .string()
-    .regex(/^[0-9]{10}$/, "Número de celular debe tener 10 dígitos"),
-  email: z.string().email("Email inválido"),
-  address: z.string().min(1, "Dirección es requerida"),
-  password: z.string().min(6, "Contraseña debe tener al menos 6 caracteres"),
+  idType: z.string().min(1, `${t("auth.signup.zod.documentType")}`),
+  idNumber: z.string().min(5, `${t("auth.signup.zod.idNumber")}`),
+  firstName: z.string().min(1, `${t("auth.signup.zod.name")}`),
+  lastName: z.string().min(1, `${t("auth.signup.zod.lastName")}`),
+  phone: z.string().regex(/^[0-9]{10}$/, `${t("auth.signup.zod.phone")}`),
+  email: z.string().email(`${t("auth.signup.zod.email")}`),
+  address: z.string().min(1, `${t("auth.signup.zod.address")}`),
+  password: z.string().min(6, `${t("auth.signup.zod.password")}`),
   acceptTerms: z.boolean().refine((val) => val === true, {
-    message: "Debes aceptar los términos y condiciones",
+    message: `${t("auth.signup.zod.acceptTerms")}`,
   }),
   acceptInfo: z.boolean(),
 });
@@ -104,8 +103,8 @@ export default function Register() {
       } catch (e) {
         Toast.show({
           type: "error",
-          text1: "Error",
-          text2: "No se pudo guardar la información del usuario",
+          text1: `${t("auth.signup.toast.error.storage.text1")}`,
+          text2: `${t("auth.signup.toast.error.storage.text2")}`,
         });
         console.error("Error al guardar datos del usuario:", e);
       }
@@ -113,8 +112,8 @@ export default function Register() {
       if (responseData) {
         Toast.show({
           type: "success",
-          text1: "Registro exitoso",
-          text2: "Tus datos han sido registrados correctamente",
+          text1: `${t("auth.signup.toast.success.text1")}`,
+          text2: `${t("auth.signup.toast.success.text2")}`,
           visibilityTime: 2000,
           onHide: () => {
             router.replace("/(app)/home");
@@ -126,8 +125,9 @@ export default function Register() {
         setIsLoading(false);
         Toast.show({
           type: "error",
-          text1: "Error de registro",
-          text2: error.message || "Por favor, verifica tus datos",
+          text1: `${t("auth.signup.toast.error.register.text1")}`,
+          text2:
+            error.message || `${t("auth.signup.toast.error.register.text2")}`,
         });
       }
     } catch (e) {
@@ -135,8 +135,8 @@ export default function Register() {
       console.error("Error al conectar con el servidor:", e);
       Toast.show({
         type: "error",
-        text1: "Error de conexión",
-        text2: "No se pudo conectar con el servidor",
+        text1: `${t("auth.toast.text1")}`,
+        text2: `${t("auth.toast.text2")}`,
       });
     }
   };
@@ -155,13 +155,13 @@ export default function Register() {
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <Logo />
 
-        <Text style={styles.sectionTitle}>Empezar ahora</Text>
-        <Text style={styles.sectionSubtitle}>
-          Registrarte es muy fácil y rápido
-        </Text>
+        <Text style={styles.sectionTitle}>{t("auth.signup.title")}</Text>
+        <Text style={styles.sectionSubtitle}>{t("auth.signup.subTitle")}</Text>
 
         <View style={styles.pickerContainer}>
-          <Text style={styles.pickerLabel}>Tipo de documento</Text>
+          <Text style={styles.pickerLabel}>
+            {t("auth.signup.documentLabel")}
+          </Text>
           <Controller
             control={control}
             name="idType"
@@ -176,16 +176,16 @@ export default function Register() {
                     dropdownIconColor={colors.primary}
                   >
                     <Picker.Item
-                      label="Seleccione un tipo"
+                      label={t("auth.signup.documentPlaceholder")}
                       value=""
                       enabled={false}
                     />
                     <Picker.Item
-                      label="Cédula de ciudadanía"
+                      label={t("auth.signup.documentTypes.CC")}
                       value="CC"
                     />
                     <Picker.Item
-                      label="NIT"
+                      label={t("auth.signup.documentTypes.NIT")}
                       value="NIT"
                     />
                   </Picker>
@@ -203,7 +203,8 @@ export default function Register() {
           name="idNumber"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              placeholder="No de identificación"
+              placeholder={t("auth.signup.idNumberPlaceholder")}
+              keyboardType="numeric"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -217,7 +218,7 @@ export default function Register() {
           name="firstName"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              placeholder="Nombre"
+              placeholder={t("auth.signup.namePlaceholder")}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -231,7 +232,7 @@ export default function Register() {
           name="lastName"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              placeholder="Apellido"
+              placeholder={t("auth.signup.lastNamePlaceholder")}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -245,7 +246,7 @@ export default function Register() {
           name="phone"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              placeholder="No de celular"
+              placeholder={t("auth.signup.phonePlaceholder")}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -260,7 +261,7 @@ export default function Register() {
           name="address"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              placeholder="Dirección de entrega"
+              placeholder={t("auth.signup.addressPlaceholder")}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -269,14 +270,16 @@ export default function Register() {
           )}
         />
 
-        <Text style={styles.sectionTitle}>Datos para iniciar sesión</Text>
+        <Text style={styles.sectionTitle}>
+          {t("auth.signup.loginDataTitle")}
+        </Text>
 
         <Controller
           control={control}
           name="email"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              placeholder="Email"
+              placeholder={t("auth.signup.emailPlaceholder")}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -291,7 +294,7 @@ export default function Register() {
           name="password"
           render={({ field: { onChange, onBlur, value } }) => (
             <Input
-              placeholder="Contraseña"
+              placeholder={t("auth.signup.passwordPlaceholder")}
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -316,7 +319,7 @@ export default function Register() {
           />
           <View style={styles.checkboxTextContainer}>
             <Text style={styles.checkboxText}>
-              Acepto términos y condiciones y la política de privacidad.
+              {t("auth.signup.termsAndConditions")}
             </Text>
             {errors.acceptTerms && (
               <Text style={styles.errorText}>{errors.acceptTerms.message}</Text>
@@ -338,13 +341,12 @@ export default function Register() {
             )}
           />
           <Text style={styles.checkboxText}>
-            Acepto a CCP para enviarme información a través de correo
-            electrónico, Whatsapp y/o celular.
+            {t("auth.signup.allowContact")}
           </Text>
         </View>
 
         <Button
-          title="Registrarme"
+          title={t("auth.signup.button")}
           onPress={handleSubmit(onSubmit)}
           style={styles.registerButton}
         />

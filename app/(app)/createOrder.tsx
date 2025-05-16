@@ -12,6 +12,7 @@ import { authClient, fetchClient } from "@/services";
 import { Logo, Button } from "@/components";
 import { NumberPicker } from "@/components";
 import { colors } from "@/theme/colors";
+import { t } from "@/i18n";
 
 interface Product {
   id: number;
@@ -189,8 +190,8 @@ export default function CreateOrder() {
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>Creación de pedidos</Text>
-        <Text style={styles.subtitle}>Selecciona la cantidad de productos</Text>
+        <Text style={styles.title}>{t("createOrder.screenTitle")}</Text>
+        <Text style={styles.subtitle}>{t("createOrder.subTitle")}</Text>
 
         {loadingProducts ? (
           <ActivityIndicator
@@ -200,7 +201,7 @@ export default function CreateOrder() {
           />
         ) : products.length === 0 ? (
           <Text style={styles.noProductsText}>
-            No hay productos disponibles.
+            {t("createOrder.noProducts")}
           </Text>
         ) : (
           <ScrollView contentContainerStyle={styles.productsContainer}>
@@ -245,7 +246,7 @@ export default function CreateOrder() {
 
         {!loadingProducts && products.length > 0 && (
           <View style={styles.totalContainer}>
-            <Text style={styles.totalLabel}>Total del pedido:</Text>
+            <Text style={styles.totalLabel}>{t("createOrder.totalLabel")}</Text>
             <Text style={styles.totalValue}>
               {formatCurrency(totalOrderValue)}
             </Text>
@@ -253,7 +254,7 @@ export default function CreateOrder() {
         )}
 
         <Button
-          title={isLoading ? "Enviando..." : "Realizar pedido"}
+          title={isLoading ? "Enviando..." : `${t("createOrder.button")}`}
           onPress={handleSubmit}
           style={styles.submitButton}
           disabled={
