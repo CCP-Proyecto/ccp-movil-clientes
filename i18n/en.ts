@@ -111,4 +111,16 @@ export default {
     orderDate: "Date",
     orderCity: "City",
   },
+  orders: {
+    screenTitle: "My orders",
+    subTitle: "This is the status of your orders",
+    noOrders: "No hay pedidos disponibles",
+    products: "Products",
+    quantity: "Quantity",
+    status: {
+      delivered: "Delivered",
+      inProcess: "In process",
+      pending: "Pending",
+    },
+  },
 };

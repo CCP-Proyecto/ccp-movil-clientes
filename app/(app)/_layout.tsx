@@ -61,6 +61,14 @@ export default function AppLayout() {
           headerShown: true,
         }}
       />
+
+      <Stack.Screen
+        name="getOrders"
+        options={{
+          headerTitle: `${t("menu.getOrdersButton")}`,
+          headerShown: true,
+        }}
+      />
     </Stack>
   );
 }

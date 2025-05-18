@@ -15,6 +15,10 @@ export default function Home() {
     router.push("/(app)/getDeliveries");
   };
 
+  const handleGetOrders = () => {
+    router.push("/(app)/getOrders");
+  };
+
   return (
     <ScrollView
       style={styles.scrollContainer}
@@ -47,7 +51,12 @@ export default function Home() {
             onPress={handleGetDeliveries}
           />
         </View>
-
+        <View style={styles.buttonsContainer}>
+          <HomeButton
+            title={t("menu.getOrdersButton")}
+            onPress={handleGetOrders}
+          />
+        </View>
         <View style={{ height: 20 }} />
       </View>
     </ScrollView>

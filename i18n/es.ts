@@ -101,4 +101,26 @@ export default {
       },
     },
   },
+  deliveries: {
+    screenTitle: "Entregas",
+    subTitle: "Consulta el estado de tus entregas",
+    noDeliveries: "No hay entregas disponibles",
+    trackingNumber: "Número de seguimiento",
+    orderNumber: "Número de pedido",
+    orderDetails: "Detalles",
+    orderDate: "Fecha",
+    orderCity: "Ciudad",
+  },
+  orders: {
+    screenTitle: "Pedidos",
+    subTitle: "Consulta el estado de tus pedidos",
+    noOrders: "No hay pedidos disponibles",
+    products: "Productos",
+    quantity: "Cantidad",
+    status: {
+      delivered: "Entregado",
+      inProcess: "En proceso",
+      pending: "Pendiente",
+    },
+  },
 };
