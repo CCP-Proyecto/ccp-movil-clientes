@@ -12,5 +12,5 @@ export const CLOUD_ENDPOINTS = {
 export const APP_CONFIG = {
   APP_NAME: "CCP Customer",
   APP_ID: "ccp-customer",
-  APP_VERSION: "0.2.5",
+  APP_VERSION: "0.3.3",
 };

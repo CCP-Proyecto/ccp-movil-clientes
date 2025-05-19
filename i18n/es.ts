@@ -83,6 +83,7 @@ export default {
     consultTitle: "Consultar",
     createButton: "Crear pedido",
     getDeliveriesButton: "Entregas",
+    getOrdersButton: "Pedidos",
   },
   createOrder: {
     screenTitle: "Crear pedido",
