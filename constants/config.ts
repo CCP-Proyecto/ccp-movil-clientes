@@ -6,11 +6,12 @@ export const DEV_URLS = {
 
 export const CLOUD_ENDPOINTS = {
   USERS_MS: "https://ccp-user-management-359954554145.us-east1.run.app",
-  API_MS: "https://ccp-api-359954554145.us-east1.run.app",
+  API_MS: "https://ccp-api-local-359954554145.us-east1.run.app",
+  // API_MS_DEV: "https://ccp-api-local-359954554145.us-east1.run.app",
 };
 
 export const APP_CONFIG = {
   APP_NAME: "CCP Customer",
   APP_ID: "ccp-customer",
-  APP_VERSION: "0.3.3",
+  APP_VERSION: "1.0.0",
 };

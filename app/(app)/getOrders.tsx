@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,42 +11,39 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Logo } from "@/components";
 import { t } from "@/i18n";
 import { colors } from "@/theme/colors";
-
-const mockedOrders = [
-  {
-    id: "ORD-2023-001",
-    date: "10/05/2025",
-    status: `${t("orders.status.delivered")}`,
-    total: 120000,
-    products: [
-      { name: "Café Premium", quantity: 2, price: 25000 },
-      { name: "Chocolate Artesanal", quantity: 5, price: 14000 },
-    ],
-  },
-  {
-    id: "ORD-2023-002",
-    date: "12/05/2025",
-    status: `${t("orders.status.inProcess")}`,
-    total: 85000,
-    products: [{ name: "Galletas Tradicionales", quantity: 10, price: 8500 }],
-  },
-  {
-    id: "ORD-2023-003",
-    date: "15/05/2025",
-    status: `${t("orders.status.pending")}`,
-    total: 230000,
-    products: [
-      { name: "Café Premium", quantity: 3, price: 25000 },
-      { name: "Chocolate Artesanal", quantity: 2, price: 14000 },
-      { name: "Galletas Tradicionales", quantity: 15, price: 8500 },
-    ],
-  },
-];
+import { authClient, fetchClient } from "@/services";
+import type { Order } from "@/interfaces";
 
 export default function GetOrdersScreen() {
-  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const toggleOrderDetails = (orderId: string) => {
+  const customerId = authClient.useSession().data?.user?.userId?.toString();
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!customerId) return;
+
+      try {
+        setLoading(true);
+        const { data } = await fetchClient.get(
+          `api/order/customer/${customerId}`,
+        );
+        console.log(data);
+        setOrders(data || []);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [customerId]);
+
+  const toggleOrderDetails = (orderId: number) => {
     if (expandedOrder === orderId) {
       setExpandedOrder(null);
     } else {
@@ -58,20 +55,23 @@ export default function GetOrdersScreen() {
     return `$${value.toLocaleString("es-CO")}`;
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-CO");
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "entregado":
-        return "#28a745";
       case "delivered":
         return "#28a745";
-      case "en proceso":
+      case "confirmed":
+        return "#28a745";
+      case "in_progress":
         return "#ffc107";
-      case "in process":
-        return "#ffc107";
-      case "pendiente":
-        return "#17a2b8";
       case "pending":
         return "#17a2b8";
+      case "cancelled":
+        return "#dc3545";
       default:
         return "#6c757d";
     }
@@ -79,16 +79,49 @@ export default function GetOrdersScreen() {
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
-      case "entregado":
+      case "delivered":
         return "check-circle";
-      case "en proceso":
+      case "confirmed":
+        return "check-circle";
+      case "in_progress":
         return "truck-delivery";
-      case "pendiente":
+      case "pending":
         return "clock-outline";
+      case "cancelled":
+        return "close-circle";
       default:
         return "information";
     }
   };
+
+  const getStatusText = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "delivered":
+        return t("orders.status.delivered");
+      case "confirmed":
+        return t("orders.status.confirmed");
+      case "in_progress":
+        return t("orders.status.inProcess");
+      case "pending":
+        return t("orders.status.pending");
+      case "cancelled":
+        return t("orders.status.cancelled");
+      default:
+        return status;
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.content}>
+          <Logo />
+          <Text style={styles.title}>{t("orders.screenTitle")}</Text>
+          <Text style={styles.subtitle}>{t("common.loading")}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -98,76 +131,175 @@ export default function GetOrdersScreen() {
         <Text style={styles.title}>{t("orders.screenTitle")}</Text>
         <Text style={styles.subtitle}>{t("orders.subTitle")}</Text>
 
-        {mockedOrders.map((order) => (
-          <View
-            key={order.id}
-            style={styles.orderCard}
-          >
-            <TouchableOpacity
-              style={styles.orderHeader}
-              onPress={() => toggleOrderDetails(order.id)}
+        {orders.length === 0 ? (
+          <View style={styles.emptyState}>
+            <MaterialCommunityIcons
+              name="package-variant"
+              size={64}
+              color={colors.secondary}
+            />
+            <Text style={styles.emptyText}>{t("orders.noOrders")}</Text>
+          </View>
+        ) : (
+          orders.map((order) => (
+            <View
+              key={order.id}
+              style={styles.orderCard}
             >
-              <View style={styles.orderHeaderLeft}>
-                <MaterialCommunityIcons
-                  name="package-variant-closed"
-                  size={24}
-                  color={colors.primary}
-                  style={styles.orderIcon}
-                />
-                <View>
-                  <Text style={styles.orderId}>{order.id}</Text>
-                  <Text style={styles.orderDate}>{order.date}</Text>
-                </View>
-              </View>
-              <View style={styles.orderHeaderRight}>
-                <View
-                  style={[
-                    styles.statusBadge,
-                    { backgroundColor: getStatusColor(order.status) },
-                  ]}
-                >
+              <TouchableOpacity
+                style={styles.orderHeader}
+                onPress={() => toggleOrderDetails(order.id)}
+              >
+                <View style={styles.orderHeaderLeft}>
                   <MaterialCommunityIcons
-                    name={getStatusIcon(order.status)}
-                    size={16}
-                    color="white"
+                    name="package-variant-closed"
+                    size={24}
+                    color={colors.primary}
+                    style={styles.orderIcon}
                   />
-                  <Text style={styles.statusText}>{order.status}</Text>
-                </View>
-                <Text style={styles.orderTotal}>
-                  {formatCurrency(order.total)}
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            {expandedOrder === order.id && (
-              <View style={styles.orderDetails}>
-                <Text style={styles.detailsTitle}>{t("orders.products")}</Text>
-                {order.products.map((product, index) => (
-                  <View
-                    key={index}
-                    style={styles.productRow}
-                  >
-                    <View style={styles.productInfo}>
-                      <Text style={styles.productName}>{product.name}</Text>
-                      <Text style={styles.productQuantity}>
-                        {t("orders.quantity")} {product.quantity}
-                      </Text>
-                    </View>
-                    <Text style={styles.productPrice}>
-                      {formatCurrency(product.price * product.quantity)}
+                  <View>
+                    <Text style={styles.orderId}>#{order.id}</Text>
+                    <Text style={styles.orderDate}>
+                      {formatDate(order.createdAt)}
                     </Text>
                   </View>
-                ))}
-                <View style={styles.orderFooter}>
-                  <Text style={styles.orderTotalLabel}>Total:</Text>
-                  <Text style={styles.orderTotalValue}>
+                </View>
+                <View style={styles.orderHeaderRight}>
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: getStatusColor(order.status) },
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      name={getStatusIcon(order.status)}
+                      size={16}
+                      color="white"
+                    />
+                    <Text style={styles.statusText}>
+                      {getStatusText(order.status)}
+                    </Text>
+                  </View>
+                  <Text style={styles.orderTotal}>
                     {formatCurrency(order.total)}
                   </Text>
                 </View>
-              </View>
-            )}
-          </View>
-        ))}
+              </TouchableOpacity>
+
+              {expandedOrder === order.id && (
+                <View style={styles.orderDetails}>
+                  {/* Información del cliente */}
+                  <View style={styles.customerSection}>
+                    <Text style={styles.detailsTitle}>
+                      {t("orders.customer")}
+                    </Text>
+                    <View style={styles.customerCard}>
+                      <View style={styles.customerRow}>
+                        <MaterialCommunityIcons
+                          name="account"
+                          size={18}
+                          color={colors.primary}
+                          style={styles.infoIcon}
+                        />
+                        <Text style={styles.customerName}>
+                          {order.customer.name}
+                        </Text>
+                      </View>
+                      <View style={styles.customerRow}>
+                        <MaterialCommunityIcons
+                          name="map-marker"
+                          size={18}
+                          color={colors.primary}
+                          style={styles.infoIcon}
+                        />
+                        <Text style={styles.customerInfo}>
+                          {order.customer.address}
+                        </Text>
+                      </View>
+                      <View style={styles.customerRow}>
+                        <MaterialCommunityIcons
+                          name="phone"
+                          size={18}
+                          color={colors.primary}
+                          style={styles.infoIcon}
+                        />
+                        <Text style={styles.customerInfo}>
+                          {order.customer.phone}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Productos del pedido */}
+                  {order.orderProducts && order.orderProducts.length > 0 && (
+                    <View style={styles.productsSection}>
+                      <Text style={styles.detailsTitle}>
+                        {t("orders.products")}
+                      </Text>
+                      <View style={styles.productsCard}>
+                        {order.orderProducts.map((orderProduct, index) => (
+                          <View
+                            key={`${orderProduct.productId}-${index}`}
+                            style={[
+                              styles.productRow,
+                              index === order.orderProducts.length - 1 &&
+                                styles.lastProductRow,
+                            ]}
+                          >
+                            <View style={styles.productInfo}>
+                              <View style={styles.productHeader}>
+                                <MaterialCommunityIcons
+                                  name="package-variant"
+                                  size={16}
+                                  color={colors.primary}
+                                  style={styles.productIcon}
+                                />
+                                <Text style={styles.productName}>
+                                  {orderProduct.product?.name ||
+                                    `Producto #${orderProduct.productId}`}
+                                </Text>
+                              </View>
+                              {orderProduct.product?.description && (
+                                <Text style={styles.productDescription}>
+                                  {orderProduct.product.description}
+                                </Text>
+                              )}
+                              <View style={styles.productQuantityContainer}>
+                                <Text style={styles.productQuantity}>
+                                  {t("orders.quantity")}:{" "}
+                                  {orderProduct.quantity}
+                                </Text>
+                                <Text style={styles.productUnitPrice}>
+                                  {t("orders.unitPrice")}:{" "}
+                                  {formatCurrency(orderProduct.priceAtOrder)}
+                                </Text>
+                              </View>
+                            </View>
+                            <View style={styles.productPriceContainer}>
+                              <Text style={styles.productPrice}>
+                                {formatCurrency(
+                                  orderProduct.priceAtOrder *
+                                    orderProduct.quantity,
+                                )}
+                              </Text>
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+
+                  <View style={styles.orderFooter}>
+                    <Text style={styles.orderTotalLabel}>Total:</Text>
+                    <Text style={styles.orderTotalValue}>
+                      {formatCurrency(order.total)}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -195,6 +327,32 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     alignSelf: "flex-start",
     fontFamily: "Comfortaa-Regular",
+  },
+  emptyState: {
+    alignItems: "center",
+    marginTop: 50,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#666",
+    marginTop: 16,
+    fontFamily: "Comfortaa-Regular",
+  },
+  customerCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e8e8e8",
+  },
+  customerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  infoIcon: {
+    marginRight: 10,
+    width: 20,
   },
   orderCard: {
     borderWidth: 1,
@@ -262,38 +420,28 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#f9f9f9",
   },
+  customerSection: {
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  customerName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    fontFamily: "Comfortaa-Bold",
+  },
+  customerInfo: {
+    fontSize: 13,
+    color: "#666",
+    fontFamily: "Comfortaa-Regular",
+  },
   detailsTitle: {
     fontSize: 15,
     fontWeight: "600",
     marginBottom: 12,
     color: "#444",
-    fontFamily: "Comfortaa-Bold",
-  },
-  productRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  productInfo: {
-    flex: 1,
-  },
-  productName: {
-    fontSize: 14,
-    color: "#333",
-    fontFamily: "Comfortaa-Regular",
-  },
-  productQuantity: {
-    fontSize: 13,
-    color: "#666",
-    marginTop: 3,
-    fontFamily: "Comfortaa-Light",
-  },
-  productPrice: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#333",
     fontFamily: "Comfortaa-Bold",
   },
   orderFooter: {
@@ -302,6 +450,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 12,
     marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#ddd",
   },
   orderTotalLabel: {
     fontSize: 15,
@@ -314,6 +464,118 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: colors.primary,
+    fontFamily: "Comfortaa-Bold",
+  },
+  productsSection: {
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  productsCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e8e8e8",
+  },
+  productRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  lastProductRow: {
+    borderBottomWidth: 0,
+  },
+  productInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
+  productHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  productIcon: {
+    marginRight: 6,
+  },
+  productName: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#333",
+    fontFamily: "Comfortaa-Bold",
+    flex: 1,
+  },
+  productDescription: {
+    fontSize: 12,
+    color: "#666",
+    fontFamily: "Comfortaa-Light",
+    marginBottom: 6,
+    lineHeight: 16,
+  },
+  productQuantityContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  productQuantity: {
+    fontSize: 13,
+    color: "#666",
+    fontFamily: "Comfortaa-Regular",
+  },
+  productUnitPrice: {
+    fontSize: 13,
+    color: "#666",
+    fontFamily: "Comfortaa-Regular",
+  },
+  storageCondition: {
+    fontSize: 11,
+    color: "#999",
+    fontFamily: "Comfortaa-Light",
+    fontStyle: "italic",
+  },
+  productPriceContainer: {
+    justifyContent: "center",
+    alignItems: "flex-end",
+  },
+  productPrice: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.primary,
+    fontFamily: "Comfortaa-Bold",
+  },
+  deliverySection: {
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  deliveryCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e8e8e8",
+  },
+  deliveryRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  deliveryTextContainer: {
+    flex: 1,
+  },
+  deliveryLabel: {
+    fontSize: 12,
+    color: "#666",
+    fontFamily: "Comfortaa-Regular",
+    marginBottom: 2,
+  },
+  deliveryValue: {
+    fontSize: 14,
+    color: "#333",
     fontFamily: "Comfortaa-Bold",
   },
 });

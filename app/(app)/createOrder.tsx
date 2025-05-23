@@ -33,8 +33,6 @@ export default function CreateOrder() {
 
   const customerId = authClient.useSession().data?.user?.userId?.toString();
 
-  console.log(authClient.useSession().data?.user);
-
   const totalOrderValue = useMemo(() => {
     return products.reduce((total, product) => {
       const quantity = quantities[product.id] || 0;
@@ -58,14 +56,16 @@ export default function CreateOrder() {
     setLoadingProducts(true);
     try {
       const { data, error } = await fetchClient.get("/api/product");
-      console.log("Products response:", data, "Error:", error);
-
+      if (error) {
+        throw new Error(error.message);
+      }
       if (data && Array.isArray(data) && data.length > 0) {
         const validatedProducts = data.map((product) => ({
           ...product,
           price: product.price || 0,
         }));
         setProducts(validatedProducts);
+        // TODO traer las cantidades de los productos de "/api/inventory/product/:id/total-quantity" y actualizar en vista
       } else {
         console.log("No products found or error fetching products.");
         setProducts([]);
@@ -150,6 +150,29 @@ export default function CreateOrder() {
       console.log("Enviando orden:", JSON.stringify(orderData, null, 2));
 
       const orderResult = await fetchClient.post("/api/order", orderData);
+
+      console.log("Resultado de la orden:", orderResult);
+
+      const deliveryData = {
+        orderId: orderResult.data.id,
+        address: orderResult.data.customer.address,
+        estimatedDeliveryDate: new Date(
+          Date.now() + Math.floor(Math.random() * 10 + 5) * 24 * 60 * 60 * 1000,
+        )
+          .toISOString()
+          .split("T")[0],
+      };
+
+      const deliveryResult = await fetchClient.post(
+        "/api/delivery",
+        deliveryData,
+      );
+      console.log("Resultado de la entrega:", deliveryResult);
+      if (deliveryResult.error) {
+        throw new Error(
+          deliveryResult.error.message || "Error al procesar la entrega",
+        );
+      }
 
       if (orderResult.error) {
         throw new Error(
